@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from gi.repository import Gtk
+from gi.repository import Gio
 from gi.repository import WebKit2
 from gi.repository import GLib
 import os
@@ -8,32 +9,18 @@ import os
 builder = Gtk.Builder()
 builder.add_from_file("app.glade")
 
-inithtml="""<html>
- <head>
-  <link rel="stylesheet" type="text/css" href="markdown.css">
-  <script src=\"marked.js\"></script>
-  <script>
-   var str=\""""
-endhtml="""\";
-  </script>
-  <script src=\"markdown-view.js\"></script>
- </head>
- <body onload=\"preview()\">
-  <div class=\"markdown-body\" id=\"preview\">
-  </div>
- </body>
-</html> 
-"""
 def redo(*args):
+	async.cancel()
 	content=textbuffer.get_text(textbuffer.get_bounds()[0],textbuffer.get_bounds()[1],False)
 	content=GLib.strescape(content,"")
-	webview.load_html(inithtml+content+endhtml,"file://"+filepath+"/index.html")
+	webview.run_javascript("str = \""+content+"\";preview();",async,None,None)
 
 handlers = {
 	"gtk_main_quit":Gtk.main_quit,
 	"redo":redo
 	}
 
+async = Gio.Cancellable()
 window = builder.get_object("applicationwindow1")
 window.maximize()
 builder.connect_signals(handlers)
@@ -43,6 +30,8 @@ webkit_container.add(webview)
 
 textbuffer = builder.get_object("textbuffer");
 filepath=os.path.dirname(os.path.abspath(__file__))
+
+webview.load_uri("file://"+filepath+"/index.html")
 
 window.show_all()
 Gtk.main()
