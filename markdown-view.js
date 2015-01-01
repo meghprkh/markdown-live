@@ -13,3 +13,9 @@ function preview()
 {
 	document.getElementById('preview').innerHTML = marked(str);
 }
+
+marked.setOptions({
+  highlight: function (code) {
+    return hljs.highlightAuto(code).value;
+  }
+});
